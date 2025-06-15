@@ -74,7 +74,7 @@ export const sequelize = new Sequelize(
     'fvelasco', 
     'ltic', 
     {
-       host: '192.168.161.3',
+        host: '192.168.56.102',
        dialect: 'mysql'
     }
 );

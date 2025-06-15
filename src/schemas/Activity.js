@@ -56,8 +56,16 @@ export const Activity = sequelize.define('Activity', {
     Activity_Observation: {
         type: DataTypes.TEXT
     },
+    Activity_IsInternal: {  
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+    },
     Activity_Document: {
         type: DataTypes.BLOB("long"),
+        allowNull: true
+    },
+    Activity_StatusMobile: {
+        type: DataTypes.STRING(50),
         allowNull: true
     }
 }, { timestamps: false });

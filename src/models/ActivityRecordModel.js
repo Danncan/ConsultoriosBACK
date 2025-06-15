@@ -1,4 +1,5 @@
 import { AuditModel } from "../models/AuditModel.js";
+import { Activity } from "../schemas/Activity.js";
 import { ActivityRecord } from "../schemas/Activity_Record.js";
 import { sequelize } from "../database/database.js";
 import { getUserId } from '../sessionData.js';
@@ -32,11 +33,22 @@ export class ActivityRecordModel {
         }
     }
 
-    static async create(data, internalUser) {
-        const t = await sequelize.transaction();
-        try {
-            console.log("📥 Creating activity record for Activity_ID:", data.Activity_ID);
+        static async create(data, internalUser) {
+            const t = await sequelize.transaction();
+            try {
             const internalId = internalUser || getUserId();
+
+            console.log("📥 Creando registro de actividad para Activity_ID:", data.Activity_ID);
+
+            // Crear registro de actividad
+            // Calcular si está "on time" (menos de 30 minutos de diferencia)
+            let onTime = false;
+            if (data.Activity_Record_Recorded_Time && data.Activity_Record_On_Time) {
+                const recordedTime = new Date(data.Activity_Record_Recorded_Time);
+                const onTimeLimit = new Date(data.Activity_Record_On_Time);
+                const diffMinutes = Math.abs((recordedTime - onTimeLimit) / (1000 * 60));
+                onTime = diffMinutes <= 30;
+            }
 
             const newRecord = await ActivityRecord.create({
                 Activity_ID: data.Activity_ID,
@@ -45,27 +57,46 @@ export class ActivityRecordModel {
                 Activity_Record_Latitude: data.Activity_Record_Latitude,
                 Activity_Record_Longitude: data.Activity_Record_Longitude,
                 Activity_Record_On_Time: data.Activity_Record_On_Time,
-                Activity_Record_Observation: data.Activity_Record_Observation
+                Activity_Record_Observation: data.Activity_Record_Observation,
+                Activity_Record_Is_On_Time: onTime // Nuevo campo para indicar si está a tiempo
             }, { transaction: t });
 
-            console.log("✅ Activity record created with ID:", newRecord.Record_ID);
+            console.log("✅ Registro creado con ID:", newRecord.Record_ID);
 
+            // Actualizar estado de la actividad según el tipo de registro
+            let nuevoEstado = null;
+            if (data.Activity_Record_Type === "entrada") {
+                nuevoEstado = "iniciado";
+            } else if (data.Activity_Record_Type === "salida") {
+                nuevoEstado = "finalizado";
+            }
+            if (nuevoEstado) {
+                await Activity.update(
+                    { Activity_StatusMobile: nuevoEstado },
+                    { where: { Activity_ID: data.Activity_ID }, transaction: t }
+                );
+                console.log(`🔄 Estado de actividad actualizado a '${nuevoEstado}'`);
+            }
+
+            console.log("🔄 Estado de actividad actualizado a 'iniciado'");
+
+            // Auditar creación
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Activity_Record",
-                `User ${internalId} created activity record ${newRecord.Record_ID}`,
+                `El usuario interno ${internalId} creó el registro ${newRecord.Record_ID} y actualizó estado a 'iniciado'`,
                 { transaction: t }
             );
 
             await t.commit();
-            return { message: "Activity record created successfully", data: newRecord };
-        } catch (error) {
+            return newRecord; // 👈 Devuelve el objeto Sequelize directo
+            } catch (error) {
             await t.rollback();
-            console.error("❌ Error creating activity record:", error.message);
-            throw new Error(`Error creating activity record: ${error.message}`);
+            console.error("❌ Error en creación y actualización:", error.message);
+            throw new Error(`Error creando registro de actividad: ${error.message}`);
+            }
         }
-    }
 
     static async update(id, data, internalUser) {
         const t = await sequelize.transaction();

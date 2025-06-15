@@ -10,35 +10,34 @@ export const ActivityRecord = sequelize.define('Activity_Record', {
     },
     Activity_ID: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
-    Activity_Record_Type: {
+    Activity_Record_Type: { //Entrada o salida
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: true
     },
     Activity_Record_Recorded_Time: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
     },
     Activity_Record_Latitude: {
         type: DataTypes.DECIMAL(10, 8),
-        allowNull: false
+        allowNull: true
     },
     Activity_Record_Longitude: {
         type: DataTypes.DECIMAL(11, 8),
-        allowNull: false
+        allowNull: true
     },
     Activity_Record_On_Time: {
         type: DataTypes.BOOLEAN,
-        allowNull: false
+        allowNull: true
     },
     Activity_Record_Observation: {
         type: DataTypes.TEXT,
         allowNull: true
-    }
-}, { 
-    timestamps: false,
-});
+    },
+}, { timestamps: false });
+
 
 // Define associations
 ActivityRecord.belongsTo(Activity, { foreignKey: "Activity_ID" });

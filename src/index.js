@@ -24,7 +24,7 @@ import "./schemas/schedules_tables/associations.js";
 
 async function main(){
    try { 
-      await sequelize.sync(/*{force: true}*/);
+      await sequelize.sync(/*{alter: true}*/);
       app.listen(3000, () => {
          console.log("Server running on port 3000")
       })

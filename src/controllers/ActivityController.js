@@ -35,6 +35,19 @@ export class ActivityController {
             res.status(500).json(error);
         }
     }
+        
+    static async getAllById(req, res) {
+        const { internalId } = req.params;
+        try {
+            const activities = await ActivityModel.getAllById(internalId);
+            if (activities && activities.length > 0) {
+                return res.json(activities);
+            }
+            res.status(404).json({ message: "Activities not found" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 
     static async getDocumentById(req, res) {
         const { id } = req.params;

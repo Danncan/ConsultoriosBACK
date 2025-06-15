@@ -34,36 +34,29 @@ export class ActivityRecordController {
         }
     }
 
-    static async create(req, res) {
-        try {
-            console.log("📥 Received request to create activity record...");
-            const internalId = req.headers["internal-id"];
+        static async create(req, res) {
+            try {
+                console.log("📥 Received request to create activity record...");
+                const internalId = req.headers["internal-id"];
 
-            // Verify internal user exists
-            // const internalUser = await InternalUserModel.getById(internalId);
-            // if (!internalUser) {
-            //     console.error(`❌ Internal_ID ${internalId} not found`);
-            //     return res.status(400).json({ error: `Internal_ID ${internalId} not found` });
-            // }
-
-            // Validate required fields
-            if (!req.body.Activity_ID || !req.body.Activity_Record_Type || 
-                !req.body.Activity_Record_Recorded_Time || 
-                req.body.Activity_Record_Latitude === undefined || 
-                req.body.Activity_Record_Longitude === undefined || 
-                req.body.Activity_Record_On_Time === undefined) {
+                if (!req.body.Activity_ID || !req.body.Activity_Record_Type || 
+                    !req.body.Activity_Record_Recorded_Time || 
+                    req.body.Activity_Record_Latitude === undefined || 
+                    req.body.Activity_Record_Longitude === undefined || 
+                    req.body.Activity_Record_On_Time === undefined) {
                 return res.status(400).json({ error: "Missing required fields" });
+                }
+
+                const newRecord = await ActivityRecordModel.create(req.body, internalId);
+                console.log("✅ Activity record created successfully.");
+
+                res.status(201).json(newRecord); // ya viene listo del modelo
+            } catch (error) {
+                console.error("❌ Error creating activity record:", error.message);
+                res.status(500).json({ error: error.message });
             }
-
-            const newRecord = await ActivityRecordModel.create(req.body, internalId);
-            console.log("✅ Activity record created successfully.");
-
-            res.status(201).json(newRecord);
-        } catch (error) {
-            console.error("❌ Error creating activity record:", error.message);
-            res.status(500).json({ error: error.message });
         }
-    }
+
 
     static async update(req, res) {
         try {
