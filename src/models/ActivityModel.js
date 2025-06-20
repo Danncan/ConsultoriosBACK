@@ -93,20 +93,23 @@ export class ActivityModel {
 
     static async getAllById(internalId) {
         try {
-            return await Activity.findAll({
-                where: { 
-                    Internal_ID: internalId,
-                    // Filtrar solo actividades internas
-                    [Op.and]: [
-                        { Activity_IsInternal: 1 },
-                        { Activity_StatusMobile: { [Op.ne]: 'finalizado' } }
-                    ]
-                }
+            const results = await sequelize.query(`
+                SELECT * FROM Activities
+                WHERE Internal_ID = :internalId
+                AND Activity_IsInternal = 1
+                AND (Activity_StatusMobile IS NULL OR Activity_StatusMobile != 'finalizado');
+
+            `, {
+                replacements: { internalId },
+                type: sequelize.QueryTypes.SELECT
             });
+            return results;
         } catch (error) {
             throw new Error(`Error retrieving activities by Internal_ID: ${error.message}`);
         }
     }
+
+
     
 
     static async getDocumentById(id) {
