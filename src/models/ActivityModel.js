@@ -148,6 +148,8 @@ export class ActivityModel {
                 Activity_Observation: data.Activity_Observation,
                 Activity_IsInternal: data.Activity_IsInternal,
                 Activity_StatusMobile: data.Activity_StatusMobile || null, // Asegurar que este campo sea opcional
+                Activity_IsInternal: data.Activity_IsInternal,
+                Activity_StatusMobile: data.Activity_StatusMobile || null, // Asegurar que este campo sea opcional
                 Activity_Document: file ? file.buffer : null // Almacenar el archivo si existe
             }, { transaction: t });
     
